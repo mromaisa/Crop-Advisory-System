@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login Farmer — Crop Advisory</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fdf4; }
+
+    nav {
+      background: #2e7d32;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .nav-logo { color: #fff; font-size: 20px; font-weight: 700; text-decoration: none; }
+    .nav-logo span { color: #a5d6a7; }
+
+    .page-header {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .page-body {
+      max-width: 500px;
+      margin: 60px auto;
+      padding: 0 20px;
+    }
+
+    .form-card {
+      background: #fff;
+      padding: 40px;
+      border-radius: 14px;
+      border: 1px solid #e0f2e9;
+    }
+
+    h2 { color: #1b5e20; margin-bottom: 20px; }
+
+    .form-group {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2e7d32;
+      margin-bottom: 6px;
+    }
+
+    input {
+      padding: 10px;
+      border: 1.5px solid #c8e6c9;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46,125,50,0.1);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn:hover { background: #1b5e20; }
+
+    .error {
+      background: #ffebee;
+      color: #c62828;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    .link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    .link a {
+      color: #2e7d32;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a class="nav-logo" href="/">🌾 Crop<span>Advisory</span></a>
+  </nav>
+
+  <div class="page-header">
+    <h1>🔐 Farmer Login</h1>
+    <p>Access your dashboard and crop recommendations</p>
+  </div>
+
+<div class="flash-message-container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        {# Normalize common category variations to standard Bootstrap alert variants #}
+        {% set alert_type = 'danger' %}
+        {% if category in ['success', 'clear'] %}
+          {% set alert_type = 'success' %}
+        {% elif category == 'warning' %}
+          {% set alert_type = 'warning' %}
+        {% elif category == 'info' %}
+          {% set alert_type = 'info' %}
+        {% endif %}
+
+        <div class="alert alert-{{ alert_type }} alert-dismissible fade show shadow-lg custom-alert" role="alert">
+          <span class="alert-icon-wrapper me-2">
+            {% if alert_type == 'success' %}     ✅
+            {% elif alert_type == 'danger' %}   ❌
+            {% elif alert_type == 'warning' %}  ⚠️
+            {% else %}                           ℹ️
+            {% endif %}
+          </span>
+          
+          <span class="alert-text">{{ message }}</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+<style>
+  .flash-message-container {
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999; /* Ensures it sits on top of all forms and backgrounds */
+    width: 90%;
+    max-width: 450px; /* Kept concise so it doesn't span full widescreen layouts */
+    text-align: center;
+  }
+
+  .custom-alert {
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    animation: fadeInScale 0.3s ease-out;
+  }
+
+  /* Smooth appearance entry animation */
+  @keyframes fadeInScale {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>
+  <div class="page-body">
+
+    <div class="form-card">
+      <h2>Login</h2>
+
+      <!-- Error message from Flask -->
+      {% if error %}
+        <div class="error">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/login">
+
+        <div class="form-group">
+          <label>CNIC</label>
+          <input type="text" name="cnic" required>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" required>
+        </div>
+
+        <button class="btn" type="submit">Login</button>
+
+      </form>
+
+      <div class="link">
+        Don't have an account? <a href="/register">Register</a>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register Farmer — Crop Advisory</title>
+  <style>
+    /* Your existing CSS preserved */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f9fdf4; color: #1a1a1a; }
+    nav { background: #2e7d32; padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+    .nav-logo { color: #fff; font-size: 20px; font-weight: 700; text-decoration: none; }
+    .nav-logo span { color: #a5d6a7; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a { color: #c8e6c9; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 14px; transition: background 0.2s; }
+    .nav-links a:hover { background: #1b5e20; color: #fff; }
+    .nav-links a.active { background: #fff; color: #2e7d32; font-weight: 600; }
+    .page-header { background: linear-gradient(135deg, #2e7d32, #43a047); color: #fff; padding: 40px 32px 32px; text-align: center; }
+    .page-header h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+    .page-header p { color: #c8e6c9; font-size: 15px; }
+    .page-body { max-width: 680px; margin: 40px auto; padding: 0 20px 60px; }
+    .form-card { background: #fff; border: 1px solid #e0f2e9; border-radius: 14px; padding: 36px 40px; }
+    .form-card h2 { font-size: 18px; font-weight: 700; color: #1b5e20; margin-bottom: 4px; }
+    .form-card .form-desc { font-size: 13px; color: #777; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid #e8f5e9; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: #2e7d32; }
+    .form-group label .required { color: #e53935; margin-left: 2px; }
+    .form-group .hint { font-size: 11px; color: #999; margin-top: -4px; }
+    .form-group input, .form-group select { padding: 10px 14px; border: 1.5px solid #c8e6c9; border-radius: 8px; font-size: 14px; color: #1a1a1a; background: #fff; transition: border-color 0.2s, box-shadow 0.2s; outline: none; width: 100%; }
+    .form-group input:focus, .form-group select:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46,125,50,0.1); }
+    .section-divider { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .06em; margin: 24px 0 18px; display: flex; align-items: center; gap: 10px; }
+    .section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: #e8f5e9; }
+    .submit-btn { width: 100%; padding: 13px; background: #2e7d32; color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 24px; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .submit-btn:hover { background: #1b5e20; }
+    .login-link { text-align: center; margin-top: 20px; font-size: 13px; color: #777; }
+    .login-link a { color: #2e7d32; font-weight: 600; text-decoration: none; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .form-card { padding: 24px 20px; } }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav>
+    <a class="nav-logo" href="/">🌾 Crop<span>Advisory</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/register" class="active">Register</a>
+      <a href="/farm">My Farm</a>
+      <a href="/weather">Weather</a>
+      <a href="/advisory">Get Advisory</a>
+      <a href="/dashboard">Dashboard</a>
+    </div>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>👤 Farmer Registration</h1>
+    <p>Create your account to get personalized crop recommendations</p>
+  </div>
+
+  <div class="page-body">
+    <!-- FORM CARD -->
+    <div class="form-card">
+      <h2>Personal Information</h2>
+      <p class="form-desc">Fill in your details below. All fields marked with <span style="color:#e53935">*</span> are required.</p>
+
+      <!-- Standard Form Submission to Flask -->
+      <form method="POST" action="/register">
+
+        <!-- PERSONAL INFO -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Full Name <span class="required">*</span></label>
+            <input type="text" name="full_name" id="full_name" placeholder="e.g. Ahmed Khan" required />
+          </div>
+          <div class="form-group">
+            <label>CNIC <span class="required">*</span></label>
+            <input type="text" name="cnic" id="cnic" placeholder="e.g. 35201-1234567-1" maxlength="15" required />
+            <span class="hint">Format: XXXXX-XXXXXXX-X</span>
+          </div>
+        </div>
+
+        <div class="section-divider">Contact Details</div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Phone Number <span class="required">*</span></label>
+            <input type="tel" name="phone_number" id="phone_number" placeholder="e.g. 0300-1234567" required />
+          </div>
+          <div class="form-group">
+            <label>Email Address <span class="required">*</span></label>
+            <input type="email" name="email" id="email" placeholder="e.g. ahmed@example.com" required />
+          </div>
+        </div>
+
+        <div class="section-divider">Security & Location</div>
+
+        <!-- PASSWORD SECTION -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password <span class="required">*</span></label>
+            <input type="password" name="password" id="password" placeholder="Create a password" required>
+          </div>
+          <div class="form-group">
+            <label>Confirm Password <span class="required">*</span></label>
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Repeat password" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Registration Date <span class="required">*</span></label>
+            <input type="date" name="registration_date" id="registration_date" required />
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">
+          <span>✅ Register as Farmer</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- ALREADY REGISTERED -->
+    <div class="login-link">
+      Already registered?
+      <a href="/login">Go to Login →</a>
+    </div>
+  </div>
+
+  <script>
+    // ── Set today's date as default ──
+    document.getElementById('registration_date').valueAsDate = new Date();
+
+    // ── Auto-format CNIC as user types (XXXXX-XXXXXXX-X) ──
+    document.getElementById('cnic').addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '');
+      if (v.length > 5)  v = v.slice(0,5)  + '-' + v.slice(5);
+      if (v.length > 13) v = v.slice(0,13) + '-' + v.slice(13);
+      this.value = v.slice(0, 15);
+    });
+
+    // ── Simple client-side password match check before submission ──
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+      const pass = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm_password').value;
+
+      if (pass !== confirm) {
+        e.preventDefault();
+        alert("Passwords do not match!");
+      }
+    });
+  </script>
+
+</body>
+</html>

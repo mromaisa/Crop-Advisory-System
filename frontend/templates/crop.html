@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crop Management — CropAdvisory</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a2e1f;display:flex;height:100vh;overflow:hidden}
+.sidebar{width:240px;background:#1a2e1f;color:#c8dbc1;display:flex;flex-direction:column;flex-shrink:0;height:100vh}
+.sidebar-header{height:60px;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #2d4a35}
+.logo{font-size:1.05rem;font-weight:700;color:#f0c040}.logo span{color:#8dc8a0}
+.nav{flex:1;overflow-y:auto;padding:12px 8px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;text-decoration:none;color:#a8c8b0;font-size:0.84rem;font-weight:500;transition:all .15s;margin-bottom:2px}
+.nav a:hover,.nav a.active{background:#2d5a3d;color:#e0f0e0}
+.sidebar-footer{padding:12px 16px;border-top:1px solid #2d4a35;font-size:0.7rem;color:#6a8a70}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{height:60px;background:white;border-bottom:1px solid #e0ead8;display:flex;align-items:center;justify-content:space-between;padding:0 28px}
+.topbar h1{font-size:1rem;font-weight:600}
+.online{display:flex;align-items:center;gap:6px;font-size:0.78rem;color:#6b7c6b}
+.online::before{content:'';width:7px;height:7px;background:#22c55e;border-radius:50%;display:inline-block}
+.content{flex:1;overflow-y:auto;padding:28px}
+.page-header-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+.page-header h2{font-size:1.5rem;font-weight:700}.page-header p{color:#6b7c6b;font-size:0.875rem;margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:0.875rem;font-weight:500;cursor:pointer;border:none;text-decoration:none;transition:all .15s}
+.btn-primary{background:#2d7a3d;color:white}.btn-primary:hover{background:#245f30}
+.btn-danger{background:#dc2626;color:white}
+.btn-ghost{background:transparent;color:#6b7c6b;padding:6px 8px;border:none;cursor:pointer;border-radius:6px;font-size:0.82rem}
+.btn-ghost:hover{background:#f0f4ee}
+.search-wrap{position:relative;max-width:280px;margin-bottom:16px}
+.search-wrap input{width:100%;padding:8px 12px 8px 34px;border:1px solid #d0dcc8;border-radius:7px;font-size:0.875rem;outline:none}
+.search-wrap input:focus{border-color:#2d7a3d}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9cad9c;font-size:0.85rem}
+.card{background:white;border:1px solid #e0ead8;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:#f8faf6}
+th{padding:10px 14px;text-align:left;font-size:0.75rem;font-weight:600;color:#6b7c6b;text-transform:uppercase;letter-spacing:.04em}
+td{padding:11px 14px;font-size:0.875rem;border-top:1px solid #f0f4ee;vertical-align:middle}
+tr:hover td{background:#fafcf8}
+.empty td{text-align:center;color:#6b7c6b;padding:40px}
+.action-btns{display:flex;gap:4px;justify-content:flex-end}
+.cat-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:0.70rem;font-weight:600;text-transform:capitalize}
+.cat-cereal{background:#fef9c3;color:#854d0e}.cat-vegetable{background:#dcfce7;color:#166534}
+.cat-fruit{background:#ffedd5;color:#c2410c}.cat-legume{background:#d1fae5;color:#065f46}
+.cat-oilseed{background:#fef08a;color:#854d0e}.cat-fiber{background:#dbeafe;color:#1e40af}
+.cat-spice{background:#fee2e2;color:#991b1b}.cat-forage{background:#ccfbf1;color:#0f766e}
+.alert{padding:10px 14px;border-radius:7px;margin-bottom:16px;font-size:0.875rem}
+.alert-success{background:#dcfce7;color:#166534}.alert-error{background:#fee2e2;color:#991b1b}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:white;border-radius:12px;padding:24px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:1.05rem;font-weight:700;margin-bottom:18px}
+.form-group{margin-bottom:13px}
+.form-group label{display:block;font-size:0.8rem;font-weight:600;color:#3a5a42;margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:8px 10px;border:1px solid #d0dcc8;border-radius:7px;font-size:0.875rem;outline:none}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#2d7a3d;box-shadow:0 0 0 2px rgba(45,122,61,.15)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-footer{display:flex;gap:10px;margin-top:18px}
+.modal-footer .btn{flex:1;justify-content:center}
+.btn-outline{background:transparent;border:1px solid #d0dcc8;color:#3a5a42;padding:8px 16px;border-radius:7px;font-size:0.875rem;cursor:pointer}
+.btn-outline:hover{background:#f0f4ee}
+.confirm-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;align-items:center;justify-content:center}
+.confirm-backdrop.open{display:flex}
+.confirm-box{background:white;border-radius:12px;padding:24px;max-width:380px;width:100%}
+.confirm-box h4{font-size:1rem;font-weight:700;margin-bottom:8px}
+.confirm-box p{font-size:0.875rem;color:#6b7c6b;margin-bottom:20px}
+.confirm-footer{display:flex;gap:10px;justify-content:flex-end}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-header"><span class="logo">🌾 Crop<span>Advisory</span></span></div>
+  <nav class="nav">
+    <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+    <a href="{{ url_for('admin.farmers') }}">👥 Farmers</a>
+    <a href="{{ url_for('admin.farm') }}">🗺️ Farms</a>
+    <a href="{{ url_for('admin.location') }}">📍 Locations</a>
+    <a href="{{ url_for('admin.weather') }}">🌧️ Weather</a>
+    <a href="{{ url_for('admin.soil') }}">🧪 Soil Profiles</a>
+    <a href="{{ url_for('admin.crop') }}" class="active">🌱 Crop Management</a>
+    <a href="{{ url_for('admin.advisory') }}">🍃 Advisory</a>
+    <a href="{{ url_for('admin.report') }}">📈 Reports</a>
+  </nav>
+  <div class="sidebar-footer">AgriCore Field System v1.0</div>
+</aside>
+<div class="main">
+  <div class="topbar"><h1>Crop Management</h1><span class="online">System Online</span></div>
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    <div class="page-header-row">
+      <div class="page-header"><h2>Crop Management</h2><p>Define crop varieties and their growing requirements.</p></div>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Add Crop</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search crops..." oninput="filterTable()"/>
+    </div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Crop</th>
+            <th>Category</th>
+            <th>Temp (°C)</th>
+            <th>Rainfall (mm)</th>
+            <th>pH</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cropTable">
+          {% if crops %}
+            {% for c in crops %}
+            <tr>
+              <td style="font-weight:500">{{ c.name }}</td>
+              <td><span class="cat-badge cat-{{ c.category }}">{{ c.category }}</span></td>
+              <td style="font-family:monospace;font-size:0.82rem">{{ c.min_temperature }}–{{ c.max_temperature }}</td>
+              <td style="font-family:monospace;font-size:0.82rem">{{ c.min_rainfall }}–{{ c.max_rainfall }}</td>
+              <td style="font-family:monospace;font-size:0.82rem">{{ c.min_ph }}–{{ c.max_ph }}</td>
+              <td>
+                <div class="action-btns">
+                  <button class="btn-ghost"
+  data-id="{{ c.id }}"
+  data-name="{{ c.name }}"
+  data-category="{{ c.category }}"
+  data-min-temp="{{ c.min_temperature|default(0) }}"
+  data-max-temp="{{ c.max_temperature|default(0) }}"
+  data-min-rain="{{ c.min_rainfall|default(0) }}"
+  data-max-rain="{{ c.max_rainfall|default(0) }}"
+  data-min-ph="{{ c.min_ph|default(0) }}"
+  data-max-ph="{{ c.max_ph|default(0) }}"
+  onclick="openEditModal(
+    this.dataset.id,
+    this.dataset.name,
+    this.dataset.category,
+    this.dataset.minTemp,
+    this.dataset.maxTemp,
+    this.dataset.minRain,
+    this.dataset.maxRain,
+    this.dataset.minPh,
+    this.dataset.maxPh
+  )">✏️
+</button>
+
+
+                  <button class="btn-ghost" style="color:#dc2626"
+                    data-id="{{ c.id }}"
+                    data-name="{{ c.name }}"
+                    onclick="openConfirm(
+                      this.dataset.id,
+                      this.dataset.name
+                    )">🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr class="empty"><td colspan="6">No crops found.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="cropModal">
+  <div class="modal">
+    <h3 id="modalTitle">Add New Crop</h3>
+    <form id="cropForm" method="POST" action="{{ url_for('admin.crop_create') }}">
+      <div class="form-grid">
+        <div class="form-group"><label>Crop Name</label><input type="text" name="name" id="fieldName" required/></div>
+        <div class="form-group"><label>Category</label>
+          <select name="category" id="fieldCategory" required>
+            <option value="cereal">Cereal</option>
+            <option value="vegetable">Vegetable</option>
+            <option value="fruit">Fruit</option>
+            <option value="legume">Legume</option>
+            <option value="oilseed">Oilseed</option>
+            <option value="fiber">Fiber</option>
+            <option value="spice">Spice</option>
+            <option value="forage">Forage</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Min Temp (°C)</label><input type="number" name="min_temperature" id="fieldMinTemp" step="0.5" required/></div>
+        <div class="form-group"><label>Max Temp (°C)</label><input type="number" name="max_temperature" id="fieldMaxTemp" step="0.5" required/></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Min Rainfall (mm)</label><input type="number" name="min_rainfall" id="fieldMinRain" required/></div>
+        <div class="form-group"><label>Max Rainfall (mm)</label><input type="number" name="max_rainfall" id="fieldMaxRain" required/></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label>Min pH</label><input type="number" name="min_ph" id="fieldMinPh" step="0.1" min="0" max="14" required/></div>
+        <div class="form-group"><label>Max pH</label><input type="number" name="max_ph" id="fieldMaxPh" step="0.1" min="0" max="14" required/></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" onclick="closeModal();">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Create Crop</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="confirm-backdrop" id="confirmModal">
+  <div class="confirm-box">
+    <h4>Delete Crop?</h4>
+    <p id="confirmMsg"></p>
+    <div class="confirm-footer">
+      <button class="btn-outline" onclick="closeConfirm()">Cancel</button>
+      <form id="deleteForm" method="POST" action="" style="display:inline">
+        <button type="submit" class="btn btn-danger">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+var CREATE_URL = "{{ url_for('admin.crop_create') }}";
+var UPDATE_BASE_URL = "{{ url_for('admin.crop_update', crop_id=0) }}".replace('/0', '');
+
+function openAddModal(){
+  document.getElementById('modalTitle').textContent='Add New Crop';
+  document.getElementById('cropForm').action=CREATE_URL;
+  document.getElementById('submitBtn').textContent='Create Crop';
+  
+  ['fieldName','fieldMinTemp','fieldMaxTemp','fieldMinRain','fieldMaxRain','fieldMinPh','fieldMaxPh'].forEach(function(id){
+    document.getElementById(id).value='';
+  });
+  document.getElementById('fieldCategory').value='cereal';
+  document.getElementById('cropModal').classList.add('open');
+}
+
+function openEditModal(id, name, cat, minT, maxT, minR, maxR, minP, maxP){
+  document.getElementById('modalTitle').textContent='Edit Crop';
+  document.getElementById('cropForm').action=UPDATE_BASE_URL + '/' + id;
+  document.getElementById('submitBtn').textContent='Update Crop';
+  
+  document.getElementById('fieldName').value=name;
+  document.getElementById('fieldCategory').value=cat;
+  document.getElementById('fieldMinTemp').value=minT;
+  document.getElementById('fieldMaxTemp').value=maxT;
+  document.getElementById('fieldMinRain').value=minR;
+  document.getElementById('fieldMaxRain').value=maxR;
+  document.getElementById('fieldMinPh').value=minP;
+  document.getElementById('fieldMaxPh').value=maxP;
+  document.getElementById('cropModal').classList.add('open');
+}
+
+function closeModal(){document.getElementById('cropModal').classList.remove('open')}
+
+function openConfirm(id,name){
+  document.getElementById('confirmMsg').textContent='Delete '+name+'?';
+  document.getElementById('deleteForm').action="{{ url_for('admin.crop_delete', crop_id=0) }}".replace('/0','/')+id;
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeConfirm(){document.getElementById('confirmModal').classList.remove('open')}
+
+function filterTable(){
+  var q=document.getElementById('searchInput').value.toLowerCase();
+  document.querySelectorAll('#cropTable tr').forEach(function(r){
+    r.style.display=r.textContent.toLowerCase().includes(q)?'':'none'
+  });
+}
+
+document.getElementById('cropModal').addEventListener('click',function(e){if(e.target===this)closeModal()});
+document.getElementById('confirmModal').addEventListener('click',function(e){if(e.target===this)closeConfirm()});
+</script>
+</body>
+</html>

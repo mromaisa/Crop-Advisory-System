@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Farms — Crop Advisory</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f9fdf4;
+      color: #1a1a1a;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      background: #2e7d32;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .nav-logo span {
+      color: #a5d6a7;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-links a {
+      color: #c8e6c9;
+      text-decoration: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: background .2s;
+    }
+
+    .nav-links a:hover {
+      background: #1b5e20;
+      color: #fff;
+    }
+
+    .nav-links a.active {
+      background: #fff;
+      color: #2e7d32;
+      font-weight: 600;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      color: #c8e6c9;
+      font-size: 14px;
+    }
+
+    .btn-header {
+      padding: 9px 20px;
+      background: #fff;
+      color: #2e7d32;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .2s;
+    }
+
+    .btn-header:hover {
+      background: #e8f5e9;
+    }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      max-width: 860px;
+      margin: 28px auto 60px;
+      padding: 0 16px;
+    }
+
+    /* ── FARMER BADGE ── */
+    .farmer-badge {
+      background: #fff;
+      border: 1px solid #e0f2e9;
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .farmer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #2e7d32;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .farmer-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1b5e20;
+    }
+
+    .farmer-id {
+      font-size: 12px;
+      color: #777;
+      margin-top: 2px;
+    }
+
+    .farm-counter {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* ── REGISTERED FARMS GRID ── */
+    .farms-section {
+      margin-bottom: 24px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1a1a1a;
+    }
+
+    .farms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── FARM TILE ── */
+    .farm-tile {
+      background: #fff;
+      border: 1px solid #e0f2e9;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+      margin-bottom: 14px;
+    }
+
+    .farm-tile:hover {
+      border-color: #81c784;
+      box-shadow: 0 2px 10px rgba(46, 125, 50, .08);
+    }
+
+    .farm-tile-top {
+      padding: 16px 18px;
+      border-bottom: 1px solid #f0faf0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .farm-tile-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1b5e20;
+      margin-bottom: 4px;
+    }
+
+    .farm-tile-meta {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .type-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── ADD FARM PANEL ── */
+    .add-panel {
+      background: #fff;
+      border: 1px solid #e0f2e9;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .add-panel-header {
+      background: #2e7d32;
+      color: #fff;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .add-panel-title {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .add-panel-sub {
+      font-size: 12px;
+      color: #a5d6a7;
+      margin-top: 2px;
+    }
+
+    /* ── FORM ELEMENTS ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+    }
+
+    label .req {
+      color: #e53935;
+      margin-left: 2px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap .ico {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      color: #81c784;
+      pointer-events: none;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px 14px 10px 36px;
+      border: 1.5px solid #c8e6c9;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1a1a1a;
+      background: #fff;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #2e7d32;
+      box-shadow: 0 0 0 3px rgba(46, 125, 50, .12);
+    }
+
+    /* Form section label */
+    .form-sec-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #2e7d32;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e8f5e9;
+    }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: #2e7d32;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover {
+      background: #1b5e20;
+    }
+
+    .btn-submit:active {
+      transform: scale(.98);
+    }
+
+    @media (max-width:600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav>
+    <a class="nav-logo" href="/">🌾 Crop<span>Advisory</span></a>
+    <div class="nav-links">
+      <a href="{{ url_for('user.create_farm_view') }}" class="active">My Farms</a>
+      <a href="{{ url_for('user.advisory') }}">Get Advisory</a>
+      <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('auth.logout') }}">Logout</a>
+    </div>
+  </nav>
+
+  <div class="page-header">
+    <div>
+      <h1>🌾 My Farms</h1>
+      <p>Add farms with soil profile and weather data for accurate recommendations</p>
+    </div>
+    <a href="{{ url_for('user.advisory') }}" class="btn-header">📋 Get Advisory</a>
+  </div>
+
+  <div class="page-wrap">
+
+    <div class="farms-section">
+      <div class="section-header">
+        <div class="section-title">Registered Farms</div>
+      </div>
+      <div id="farmsGrid" class="farms-grid">
+        {% for f in farms %}
+        <div class="farm-tile">
+          <div class="farm-tile-top">
+            <div>
+              <h3 class="farm-tile-name">{{ f.farm_name }}</h3>
+              <div class="farm-tile-meta">
+                <p>📐 {{ f.area_acres }} acres</p>
+                <p>🏷️ {{ f.farm_type }}</p>
+                <p>📍 {{ f.village_name }}, {{ f.district }} ({{ f.province }})</p>
+              </div>
+            </div>
+          </div>
+          <!-- Soil profile button lives inside the SAME tile, not a separate loop -->
+          <div style="padding:12px 18px; border-top:1px solid #f0faf0;">
+            <a href="{{ url_for('user.add_soil_view', farm_id=f.farm_id) }}"
+              style="font-size:13px; color:#2e7d32; font-weight:600; text-decoration:none;">
+              🪱 Configure Soil Profile →
+            </a>
+          </div>
+        </div>
+        {% else %}
+        <div class="no-farms" style="grid-column:1/-1; background:#fff; border:1px dashed #c8e6c9;
+         border-radius:12px; padding:36px; text-align:center; color:#888;">
+          <div style="font-size:40px; margin-bottom:12px;">🌾</div>
+          <h3>No farms added yet. Add your first farm below.</h3>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+    <div class="flash-message-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      {% for category, message in messages %}
+      {# Normalize common category variations to standard Bootstrap alert variants #}
+      {% set alert_type = 'danger' %}
+      {% if category in ['success', 'clear'] %}
+      {% set alert_type = 'success' %}
+      {% elif category == 'warning' %}
+      {% set alert_type = 'warning' %}
+      {% elif category == 'info' %}
+      {% set alert_type = 'info' %}
+      {% endif %}
+
+      <div class="alert alert-{{ alert_type }} alert-dismissible fade show shadow-lg custom-alert" role="alert">
+        <span class="alert-icon-wrapper me-2">
+          {% if alert_type == 'success' %} ✅
+          {% elif alert_type == 'danger' %} ❌
+          {% elif alert_type == 'warning' %} ⚠️
+          {% else %} ℹ️
+          {% endif %}
+        </span>
+
+        <span class="alert-text">{{ message }}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+      {% endif %}
+      {% endwith %}
+    </div>
+
+    <div class="add-panel" id="addPanel">
+      <div class="add-panel-header">
+        <div>
+          <div class="add-panel-title">➕ Add New Farm</div>
+          <div class="add-panel-sub">Enter your farm details below to save to your records</div>
+        </div>
+      </div>
+
+      <div class="add-panel-body">
+        <form action="{{ url_for('user.process_create_farm') }}" method="POST">
+          <div class="form-sec-label">Farm Information</div>
+
+          <div class="form-group">
+            <label for="farmName">Farm Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="ico">🌾</span>
+              <input type="text" id="farmName" name="farm_name" placeholder="e.g. Green Valley Farm" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="areaAcres">Area (Acres) <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="ico">📐</span>
+                <input type="number" id="areaAcres" name="area_acres" placeholder="e.g. 12.5" step="0.1" min="0.1"
+                  required />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-sec-label" style="margin-top: 10px;">Location Details</div>
+
+          <div class="form-group">
+            <label for="villageName">Village Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="ico">🏡</span>
+              <input type="text" id="villageName" name="village_name" placeholder="e.g. Chak 45" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="district">District <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="ico">📍</span>
+                <input type="text" id="district" name="district" placeholder="e.g. Lahore" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="province">Province <span class="req">*</span></label>
+              <div class="input-wrap">
+                <span class="ico">🗺️</span>
+                <select id="province" name="province" required>
+                  <option value="">Select province</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Sindh">Sindh</option>
+                  <option value="KPK">KPK</option>
+                  <option value="Balochistan">Balochistan</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="estDate">Established Date <span class="req">*</span></label>
+            <div class="input-wrap">
+              <span class="ico">📅</span>
+              <input type="date" id="estDate" name="established_date" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <span>💾 Save Farm</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+
+</html>

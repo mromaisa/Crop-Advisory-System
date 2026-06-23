@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configure Soil Profile — Crop Advisory</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Segoe UI',Arial,sans-serif; background:#f9fdf4; color:#1a1a1a; }
+
+    /* ── NAVBAR ── */
+    nav {
+      background:#2e7d32; padding:0 32px;
+      display:flex; align-items:center; justify-content:space-between;
+      height:60px;
+    }
+    .nav-logo { color:#fff; font-size:20px; font-weight:700; text-decoration:none; }
+    .nav-logo span { color:#a5d6a7; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background:linear-gradient(135deg,#2e7d32,#43a047);
+      color:#fff; padding:28px 32px;
+    }
+    .page-header h1 { font-size:26px; font-weight:800; }
+    .page-header p { color:#c8e6c9; font-size:14px; margin-top:4px; }
+
+    /* ── LAYOUT PANEL ── */
+    .page-wrap { max-width:600px; margin:40px auto; padding:0 16px; }
+    .add-panel { background:#fff; border:1px solid #e0f2e9; border-radius:14px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.02); }
+    .add-panel-header { background:#2e7d32; color:#fff; padding:16px 22px; }
+    .add-panel-title { font-size:16px; font-weight:700; }
+    .add-panel-body { padding:24px; }
+
+    /* ── FORM LABELS & INPUTS ── */
+    .form-group { margin-bottom:20px; display:flex; flex-direction:column; }
+    label { font-size:13px; font-weight:600; color:#333; margin-bottom:8px; }
+    .req { color:#e53935; margin-left:2px; }
+    .hint { font-size:11px; font-weight:400; color:#888; margin-left:6px; }
+    .input-wrap { position:relative; }
+    .input-wrap .ico { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:15px; }
+
+    select, input[type="text"], input[type="number"], input[type="date"] {
+      width:100%; padding:10px 14px 10px 36px; border:1.5px solid #c8e6c9; border-radius:8px; font-size:14px; outline:none; font-family:inherit;
+    }
+    select:focus, input:focus { border-color:#2e7d32; box-shadow:0 0 0 3px rgba(46,125,50,.12); }
+
+    /* ── DYNAMIC RANGE SLIDER ── */
+    .ph-row { display:flex; align-items:center; gap:12px; margin-top:4px; }
+    .ph-row input[type=range] { flex:1; accent-color:#2e7d32; cursor:pointer; }
+    .ph-value { min-width:55px; text-align:center; font-size:15px; font-weight:700; color:#2e7d32; background:#e8f5e9; border-radius:6px; padding:6px; }
+    .ph-labels { display:flex; justify-content:space-between; font-size:11px; color:#888; margin-top:6px; }
+
+    /* ── SUBMIT BUTTON ── */
+    .btn-submit {
+      width:100%; padding:13px; background:#2e7d32; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s;
+    }
+    .btn-submit:hover { background:#1b5e20; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">🌾 Crop<span>Advisory</span></a>
+</nav>
+
+<div class="page-header">
+  <h1>🪱 Step 2: Configure Soil Profile</h1>
+  <p>Set up chemical properties for <strong>{{ farm.farm_name }}</strong> to complete application dependencies.</p>
+</div>
+
+<div class="page-wrap">
+  <div class="add-panel">
+    <div class="add-panel-header">
+      <div class="add-panel-title">📋 Analysis Input Fields</div>
+    </div>
+
+    <div class="add-panel-body">
+      <form action="{{ url_for('user.process_add_soil', farm_id=farm.farm_id) }}" method="POST">
+
+        <div class="form-group">
+          <label for="soilType">Soil Type Classification <span class="req">*</span></label>
+          <div class="input-wrap">
+            <span class="ico">🪱</span>
+            <select id="soilType" name="soil_type_id" required>
+              <option value="">-- Select soil configuration --</option>
+              {% for st in soil_types %}
+                <option value="{{ st.soil_type_id }}">{{ st.soil_type }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="organicMatter">Organic Matter % <span class="hint">(Optional tracking parameter)</span></label>
+          <div class="input-wrap">
+            <span class="ico">🌿</span>
+            <input type="number" id="organicMatter" name="organic_matter" placeholder="e.g. 0.85" step="0.01" min="0" max="100"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Soil pH Acidity Metrics <span class="req">*</span></label>
+          <div class="ph-row">
+            <input type="range" id="phSlider" name="ph_level" min="3.0" max="10.0" step="0.1" value="6.5" oninput="document.getElementById('phDisplay').textContent = this.value"/>
+            <div class="ph-value" id="phDisplay">6.5</div>
+          </div>
+          <div class="ph-labels">
+            <span>3.0 (Acidic)</span>
+            <span>7.0 (Neutral)</span>
+            <span>10.0 (Alkaline)</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="sampleDate">Soil Sampling/Inspection Date <span class="req">*</span></label>
+          <div class="input-wrap">
+            <span class="ico">📅</span>
+            <input type="date" id="sampleDate" name="sample_date" required/>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <span>💾 Complete Setup & Get Diagnostics</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Set sample date inputs to current system calendar date automatically
+  document.getElementById('sampleDate').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

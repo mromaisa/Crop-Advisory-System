@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soil Profiles — CropAdvisory</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      color: #1a2e1f;
+      display: flex;
+      height: 100vh;
+      overflow: hidden
+    }
+
+    .sidebar {
+      width: 240px;
+      background: #1a2e1f;
+      color: #c8dbc1;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      height: 100vh
+    }
+
+    .sidebar-header {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      border-bottom: 1px solid #2d4a35
+    }
+
+    .logo {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #f0c040
+    }
+
+    .logo span {
+      color: #8dc8a0
+    }
+
+    .nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 8px
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: #a8c8b0;
+      font-size: 0.84rem;
+      font-weight: 500;
+      transition: all .15s;
+      margin-bottom: 2px
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      background: #2d5a3d;
+      color: #e0f0e0
+    }
+
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid #2d4a35;
+      font-size: 0.7rem;
+      color: #6a8a70
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .topbar {
+      height: 60px;
+      background: white;
+      border-bottom: 1px solid #e0ead8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px
+    }
+
+    .topbar h1 {
+      font-size: 1rem;
+      font-weight: 600
+    }
+
+    .online {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #6b7c6b
+    }
+
+    .online::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px
+    }
+
+    .page-header {
+      margin-bottom: 20px
+    }
+
+    .page-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700
+    }
+
+    .page-header p {
+      color: #6b7c6b;
+      font-size: 0.875rem;
+      margin-top: 4px
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all .15s
+    }
+
+    .btn-primary {
+      background: #2d7a3d;
+      color: white
+    }
+
+    .btn-primary:hover {
+      background: #245f30
+    }
+
+    .btn-danger {
+      background: #dc2626;
+      color: white
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #6b7c6b;
+      padding: 6px 8px;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 0.82rem
+    }
+
+    .btn-ghost:hover {
+      background: #f0f4ee
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid #e0ead8;
+      margin-bottom: 20px
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      border: none;
+      background: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6b7c6b;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px
+    }
+
+    .tab-btn.active {
+      color: #2d7a3d;
+      border-bottom-color: #2d7a3d
+    }
+
+    .tab-content {
+      display: none
+    }
+
+    .tab-content.active {
+      display: block
+    }
+
+    .tab-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 14px
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e0ead8;
+      border-radius: 10px;
+      overflow: hidden
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    thead {
+      background: #f8faf6
+    }
+
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b7c6b;
+      text-transform: uppercase;
+      letter-spacing: .04em
+    }
+
+    td {
+      padding: 11px 14px;
+      font-size: 0.875rem;
+      border-top: 1px solid #f0f4ee
+    }
+
+    tr:hover td {
+      background: #fafcf8
+    }
+
+    .empty td {
+      text-align: center;
+      color: #6b7c6b;
+      padding: 40px
+    }
+
+    .action-btns {
+      display: flex;
+      gap: 4px;
+      justify-content: flex-end
+    }
+
+    .alert {
+      padding: 10px 14px;
+      border-radius: 7px;
+      margin-bottom: 16px;
+      font-size: 0.875rem
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      color: #166534
+    }
+
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b
+    }
+
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 200;
+      align-items: center;
+      justify-content: center
+    }
+
+    .modal-backdrop.open {
+      display: flex
+    }
+
+    .modal {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 90vh;
+      overflow-y: auto
+    }
+
+    .modal h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 18px
+    }
+
+    .form-group {
+      margin-bottom: 13px
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #3a5a42;
+      margin-bottom: 4px
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d0dcc8;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      outline: none
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #2d7a3d;
+      box-shadow: 0 0 0 2px rgba(45, 122, 61, .15)
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    .form-grid3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px
+    }
+
+    .modal-footer .btn {
+      flex: 1;
+      justify-content: center
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #d0dcc8;
+      color: #3a5a42;
+      padding: 8px 16px;
+      border-radius: 7px;
+      font-size: 0.875rem;
+      cursor: pointer
+    }
+
+    .btn-outline:hover {
+      background: #f0f4ee
+    }
+
+    .confirm-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .45);
+      z-index: 300;
+      align-items: center;
+      justify-content: center
+    }
+
+    .confirm-backdrop.open {
+      display: flex
+    }
+
+    .confirm-box {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 380px;
+      width: 100%
+    }
+
+    .confirm-box h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px
+    }
+
+    .confirm-box p {
+      font-size: 0.875rem;
+      color: #6b7c6b;
+      margin-bottom: 20px
+    }
+
+    .confirm-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end
+    }
+  </style>
+</head>
+
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-header"><span class="logo">🌾 Crop<span>Advisory</span></span></div>
+    <nav class="nav">
+      <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+      <a href="{{ url_for('admin.farmers') }}">👥 Farmers</a>
+      <a href="{{ url_for('admin.farm') }}">🗺️ Farms</a>
+      <a href="{{ url_for('admin.location') }}">📍 Locations</a>
+      <a href="{{ url_for('admin.weather') }}">🌧️ Weather</a>
+      <a href="{{ url_for('admin.soil') }}" class="active">🧪 Soil Profiles</a>
+      <a href="{{ url_for('admin.crop') }}">🌱 Crop Management</a>
+      <a href="{{ url_for('admin.advisory') }}">🍃 Advisory</a>
+      <a href="{{ url_for('admin.report') }}">📈 Reports</a>
+    </nav>
+    <div class="sidebar-footer">AgriCore Field System v1.0</div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <h1>Soil Profiles</h1><span class="online">System Online</span>
+    </div>
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">{{ message }}</div>
+      {% endfor %}
+      {% endwith %}
+      <div class="page-header">
+        <h2>Soil Profiles</h2>
+        <p>Manage soil composition and type data for farms.</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('profiles',this)">Soil Profiles</button>
+        <button class="tab-btn" onclick="switchTab('types',this)">Soil Types</button>
+      </div>
+
+      <!-- Profiles Tab -->
+      <div id="tab-profiles" class="tab-content active">
+        <div class="tab-header"><button class="btn btn-primary" onclick="openProfileModal()">+ Add Profile</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Farm</th>
+                <th>Soil Type</th>
+                <th>pH</th>
+                <th>Organic Matter</th>
+                <th>Sample Date</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if profiles %}
+              {% for p in profiles %}
+              <tr>
+                <td style="font-weight:500">{{ p.farm_name or '—' }}</td>
+                <td>{{ p.soil_type_name or '—' }}</td>
+                <td style="font-family:monospace">{{ '%.1f'|format(p.ph_level) }}</td>
+                <td style="font-family:monospace">{{ '%.1f'|format(p.organic_matter) }}%</td>
+                <td style="color:#6b7c6b;font-size:0.82rem">{{ p.sample_date }}</td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-ghost" data-id="{{ p.id }}" data-farm_id="{{ p.farm_id }}"
+                      data-stid="{{ p.stid }}" data-ph="{{ p.ph_level }}" data-om="{{ p.organic_matter }}"
+                      data-date="{{ p.sample_date }}" onclick="openEditProfile(
+    this.dataset.id,
+    this.dataset.farm_id,
+    this.dataset.stid,
+    this.dataset.ph,
+    this.dataset.om,
+    this.dataset.date
+  )">✏️
+                    </button>
+                    <button class="btn-ghost" style="color:#dc2626" data-id="{{ p.id }}" onclick="openConfirm(
+                      this.dataset.id
+                    )">🗑️
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr class="empty">
+                <td colspan="6">No soil profiles found.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Types Tab -->
+      <div id="tab-types" class="tab-content">
+        <div class="tab-header"><button class="btn btn-primary" onclick="openTypeModal()">+ Add Soil Type</button></div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if soil_types %}
+              {% for st in soil_types %}
+              <tr>
+                <td style="font-weight:500">{{ st.name }}</td>
+                <td style="color:#6b7c6b">{{ st.description or '—' }}</td>
+                <td>
+                  <div class="action-btns"><button class="btn-ghost" style="color:#dc2626" , data-id="{{ st.id }}"
+                      onclick="openConfirm('type', this.dataset.id)">🗑️</button></div>
+                </td>
+              </tr>
+              {% endfor %}
+              {% else %}
+              <tr class="empty">
+                <td colspan="3">No soil types defined.</td>
+              </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-backdrop" id="profileModal">
+    <div class="modal">
+      <h3 id="profileModalTitle">Add Soil Profile</h3>
+      <form id="profileForm" method="POST" action="{{ url_for('admin.soil') }}">
+        <input type="hidden" name="action" value="profile" />
+        <input type="hidden" name="profile_id" id="formProfileId" />
+        <div class="form-group"><label>Farm</label><select name="farm_id" id="pfFarm" required>
+            <option value="">Select farm</option>{% for f in farms %}<option value="{{ f.farm_id }}">{{ f.name }}
+            </option>{% endfor %}
+          </select></div>
+        <div class="form-group"><label>Soil Type</label><select name="soil_type_id" id="pfSoilType" required>
+            <option value="">Select soil type</option>{% for st in soil_types %}<option value="{{ st.id }}">{{ st.name
+              }}</option>{% endfor %}
+          </select></div>
+        <div class="form-grid">
+          <div class="form-group"><label>pH Level</label><input type="number" name="ph_level" id="pfPh" step="0.1"
+              min="0" max="14" required /></div>
+          <div class="form-group"><label>Organic Matter (%)</label><input type="number" name="organic_matter" id="pfOm"
+              step="0.1" min="0" required /></div>
+        </div>
+        <div class="form-grid3">
+          <div class="form-group"><label>Sample Date</label><input type="date" name="sample_date" id="pfdate"
+              default="" /></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeProfileModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="profileSubmitBtn">Add Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Soil Type Modal -->
+  <div class="modal-backdrop" id="typeModal">
+    <div class="modal">
+      <h3>Add Soil Type</h3>
+      <form method="POST" action="{{ url_for('admin.soil') }}">
+        <input type="hidden" name="action" value="type" />
+        <div class="form-group"><label>Soil Type Name</label><input type="text" name="name" required /></div>
+        <div class="form-group"><label>Description</label><input type="text" name="description" /></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline" onclick="closeTypeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Soil Type</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirm -->
+  <div class="confirm-backdrop" id="confirmModal">
+    <div class="confirm-box">
+      <h4>Delete?</h4>
+      <p id="confirmMsg">This will permanently remove this record.</p>
+      <div class="confirm-footer">
+        <button class="btn-outline" onclick="closeConfirm()">Cancel</button>
+        <form id="deleteForm" method="POST" action="" style="display:inline">
+          <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(name, btn) {
+      document.querySelectorAll('.tab-content').forEach(function (t) { t.classList.remove('active') });
+      document.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active') });
+      document.getElementById('tab-' + name).classList.add('active');
+      btn.classList.add('active');
+    }
+    function openProfileModal() {
+      document.getElementById('profileModalTitle').textContent = 'Add Soil Profile';
+      document.getElementById('profileForm').action = "{{ url_for('admin.soil') }}";
+      document.getElementById('profileSubmitBtn').textContent = 'Add Profile';
+      ['formProfileId', 'pfPh', 'pfOm', 'pfdate'].forEach(function (id) { document.getElementById(id).value = ''; });
+      document.getElementById('pfFarm').value = '';
+      document.getElementById('pfSoilType').value = '';
+      document.getElementById('profileModal').classList.add('open');
+    }
+    function openEditProfile(id, farmId, stId, ph, om, date) {
+      document.getElementById('profileModalTitle').textContent = 'Edit Profile';
+      document.getElementById('profileForm').action = "{{ url_for('admin.soil') }}/update/" + id;
+      document.getElementById('profileSubmitBtn').textContent = 'Update Profile';
+      document.getElementById('formProfileId').value = id;
+      document.getElementById('pfFarm').value = farmId;
+      document.getElementById('pfSoilType').value = stId;
+      document.getElementById('pfPh').value = ph;
+      document.getElementById('pfOm').value = om;
+      document.getElementById('pfDate').value = date !== '—' ? date : '';
+      document.getElementById('profileModal').classList.add('open');
+    }
+    function closeProfileModal() { document.getElementById('profileModal').classList.remove('open') }
+    function openTypeModal() { document.getElementById('typeModal').classList.add('open') }
+    function closeTypeModal() { document.getElementById('typeModal').classList.remove('open') }
+    function openConfirm(type, id) {
+      var url = type === 'profile'
+        ? "{{ url_for('admin.soil_profile_delete', profile_id=0) }}".replace('0', id)
+        : "{{ url_for('admin.soil_type_delete', type_id=0) }}".replace('0', id);
+      document.getElementById('deleteForm').action = url;
+      document.getElementById('confirmModal').classList.add('open');
+    }
+    function closeConfirm() { document.getElementById('confirmModal').classList.remove('open') }
+    document.getElementById('profileModal').addEventListener('click', function (e) { if (e.target === this) closeProfileModal() });
+    document.getElementById('typeModal').addEventListener('click', function (e) { if (e.target === this) closeTypeModal() });
+    document.getElementById('confirmModal').addEventListener('click', function (e) { if (e.target === this) closeConfirm() });
+  </script>
+</body>
+
+</html>

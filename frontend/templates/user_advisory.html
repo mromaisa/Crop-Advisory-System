@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crop Advisory Engine</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f9fdf4;
+      color: #1a1a1a;
+    }
+
+    /* ── NAV ── */
+    nav {
+      background: #2e7d32;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-logo { color: #fff; font-size: 20px; font-weight: 700; text-decoration: none; }
+    .nav-logo span { color: #a5d6a7; }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-links a {
+      color: #c8e6c9; text-decoration: none; padding: 8px 14px;
+      border-radius: 6px; font-size: 14px; transition: background .2s;
+    }
+    .nav-links a:hover { background: #1b5e20; color: #fff; }
+    .nav-links a.active { background: #fff; color: #2e7d32; font-weight: 600; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: linear-gradient(135deg, #2e7d32, #43a047);
+      color: #fff;
+      padding: 28px 32px;
+    }
+    .page-header h1 { font-size: 26px; font-weight: 800; }
+    .page-header p  { color: #c8e6c9; font-size: 14px; margin-top: 4px; }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      max-width: 1000px;
+      margin: 28px auto 60px;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) { .page-wrap { grid-template-columns: 1fr; } }
+
+    /* ── CONTROL PANEL ── */
+    .control-panel {
+      background: #fff;
+      border: 1px solid #e0f2e9;
+      border-radius: 14px;
+      padding: 20px;
+      height: fit-content;
+    }
+    .panel-title {
+      font-size: 15px; font-weight: 700; color: #1b5e20;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .form-group { margin-bottom: 16px; display: flex; flex-direction: column; }
+    label { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 6px; }
+    select {
+      width: 100%; padding: 10px 12px;
+      border: 1.5px solid #c8e6c9; border-radius: 8px;
+      font-size: 14px; background: #fff; outline: none; transition: all .2s;
+    }
+    select:focus { border-color: #2e7d32; box-shadow: 0 0 0 3px rgba(46,125,50,.12); }
+
+    .btn-action {
+      width: 100%; padding: 11px;
+      background: #f0faf0; color: #2e7d32;
+      border: 1px solid #c8e6c9; border-radius: 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      text-align: center; text-decoration: none; display: inline-block;
+      transition: all .2s; margin-top: 8px;
+    }
+    .btn-action:hover { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+    .btn-action:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+
+    /* ── GAP ANALYSIS ── */
+    .gap-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 10px; }
+    .gap-card {
+      background: #fdfdfd; border: 1px solid #f3d4d4;
+      border-radius: 10px; padding: 12px;
+    }
+    .gap-title  { font-size: 14px; font-weight: 700; color: #c62828; margin-bottom: 4px; }
+    .gap-meta   { font-size: 12px; color: #555; }
+    .badge-danger  { display:inline-block; padding:4px 8px; border-radius:6px; background:#ffebee; color:#c62828; font-size:11px; font-weight:700; }
+    .badge-warning { display:inline-block; padding:4px 8px; border-radius:6px; background:#fff8e1; color:#ef6c00; font-size:11px; font-weight:700; }
+
+    /* ── METRIC CARDS ── */
+    .metrics-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 14px; margin-bottom: 20px;
+    }
+    .metric-card {
+      background: #fff; border: 1px solid #e0f2e9;
+      border-radius: 12px; padding: 16px;
+    }
+    .metric-card h3 {
+      font-size: 12px; font-weight: 700; color: #777;
+      text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px;
+    }
+    .metric-val { font-size: 20px; font-weight: 800; color: #2e7d32; }
+    .metric-sub { font-size: 11px; color: #666; margin-top: 4px; }
+
+    /* ── RESULTS PANEL ── */
+    .results-panel {
+      background: #fff; border: 1px solid #e0f2e9;
+      border-radius: 14px; overflow: hidden;
+    }
+    .results-header {
+      background: #2e7d32; color: #fff;
+      padding: 16px 20px; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .results-header h2 { font-size: 15px; font-weight: 700; }
+    .results-body { padding: 20px; }
+
+    .crop-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; background: #fdfdfd;
+      border: 1px solid #e8f5e9; border-radius: 10px;
+      margin-bottom: 10px; transition: transform .15s, border-color .15s;
+    }
+    .crop-row:hover { transform: translateX(4px); border-color: #81c784; }
+    .crop-info { display: flex; align-items: center; gap: 12px; }
+    .crop-icon  { font-size: 24px; }
+    .crop-name  { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+    .crop-meta  { font-size: 12px; color: #666; margin-top: 2px; }
+    .match-badge {
+      padding: 5px 10px; background: #e8f5e9; color: #2e7d32;
+      border-radius: 20px; font-size: 12px; font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* ── FLASH ── */
+    .flash-wrap { max-width: 1000px; margin: 16px auto 0; padding: 0 16px; }
+    .alert {
+      padding: 12px 16px; border-radius: 8px; margin-bottom: 10px;
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .alert-danger  { background: #fdecea; color: #c62828; border: 1px solid #ef9a9a; }
+    .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+    /* ── STATES ── */
+    .empty-state { text-align: center; padding: 48px 20px; color: #888; }
+    .empty-icon  { font-size: 44px; margin-bottom: 12px; }
+    .no-data { font-size: 12px; color: #999; text-align: center; padding: 10px 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">🌾 Crop<span>Advisory</span></a>
+  <div class="nav-links">
+    <a href="{{ url_for('user.create_farm_view') }}">My Farms</a>
+    <a href="{{ url_for('user.advisory') }}" class="active">Get Advisory</a>
+    <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('auth.logout') }}">Logout</a>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-wrap">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+      {% if category == 'success' %}✅{% elif category == 'danger' %}❌{% else %}ℹ️{% endif %}
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="page-header">
+  <h1>🌾 Crop Recommendation Engine</h1>
+  <p id="activeFarmSubtitle">
+    {% if farms %}
+      Select an active farm below to generate recommendations
+    {% else %}
+      No farms registered yet —
+      <a href="{{ url_for('user.create_farm_view') }}" style="color:#fff;font-weight:700;text-decoration:underline;">
+        register one first
+      </a>
+    {% endif %}
+  </p>
+</div>
+
+<div class="page-wrap">
+
+  <!-- ── LEFT: CONTROLS + GAP ANALYSIS ── -->
+  <div class="control-panel">
+    <div class="panel-title">⚙️ Select Active Farm</div>
+
+    <div class="form-group">
+      <label for="farmSelect">Choose Farm Profile</label>
+      <select id="farmSelect" onchange="onFarmChange(this.value)">
+        <option value="">-- Select farm --</option>
+        {% if farms %}
+          {% for farm in farms %}
+          <option value="{{ farm.farm_id }}">{{ farm.farm_name }}</option>
+          {% endfor %}
+        {% else %}
+          <option disabled>No farms available</option>
+        {% endif %}
+      </select>
+    </div>
+
+    <button id="generateBtn" class="btn-action" onclick="runAdvisory()" disabled>
+      🌱 Generate Recommendations
+    </button>
+
+    <a href="{{ url_for('user.create_farm_view') }}"
+       class="btn-action" style="background:transparent;color:#666;">
+      ➕ Register New Farm
+    </a>
+
+    {% if farms %}
+    <div style="margin-top:14px;padding:10px 14px;background:#e8f5e9;
+                border-radius:8px;font-size:12px;color:#2e7d32;font-weight:600;">
+      🌾 {{ farms|length }} farm{{ 's' if farms|length != 1 else '' }} registered
+    </div>
+    {% endif %}
+
+    <div style="margin-top:20px;padding:10px 0 5px;font-size:14px;font-weight:700;color:#1b5e20;">
+  📉 Crop Gap Analysis
+</div>
+<div style="padding:10px 0;" id="gapAnalysisContainer">
+  <p class="no-data">Click "Generate Recommendations" to run analysis.</p>
+</div>
+  </div>
+
+  <!-- ── RIGHT: METRICS + RESULTS ── -->
+  <div>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <h3>🌦️ Avg Temperature</h3>
+        <div class="metric-val" id="avgTempDisplay">—</div>
+        <div class="metric-sub">Ambient °C</div>
+      </div>
+      <div class="metric-card">
+        <h3>🌧️ Rainfall</h3>
+        <div class="metric-val" id="rainfallDisplay">—</div>
+        <div class="metric-sub">Precipitation mm</div>
+      </div>
+      <div class="metric-card">
+        <h3>🪱 Soil Type</h3>
+        <div class="metric-val" id="soilTypeDisplay" style="font-size:15px;line-height:1.3;">—</div>
+        <div class="metric-sub">Classification</div>
+      </div>
+      <div class="metric-card">
+        <h3>🧪 Soil pH</h3>
+        <div class="metric-val" id="phDisplay">—</div>
+        <div class="metric-sub">Hydrogen Ion Concentration</div>
+      </div>
+    </div>
+
+    <div class="results-panel">
+      <div class="results-header">
+        <h2>📋 Ranked Crop Suitability</h2>
+        <span id="timestampBadge" style="font-size:11px;color:#c8e6c9;">
+          {% if farms %}Ready{% else %}No farms registered{% endif %}
+        </span>
+      </div>
+      <div class="results-body" id="cropContainer">
+        {% if not farms %}
+        <div class="empty-state">
+          <div class="empty-icon">🌾</div>
+          <h3>No farms registered yet.</h3>
+          <p style="font-size:13px;margin-top:8px;">
+            <a href="{{ url_for('user.create_farm_view') }}"
+               style="color:#2e7d32;font-weight:700;">
+              Register your first farm →
+            </a>
+          </p>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>Select a farm to begin.</h3>
+          <p style="font-size:13px;margin-top:4px;">
+            Choose a farm from the dropdown, then click Generate Recommendations.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const farmConfigUrl = "{{ url_for('user.create_farm_view') }}";
+  let activeFarmId = null;
+
+  // ── Dropdown change: load farm metrics only, enable generate button
+  function onFarmChange(farmId) {
+    activeFarmId = farmId || null;
+    document.getElementById("generateBtn").disabled = !farmId;
+
+    if (!farmId) {
+      resetMetrics();
+      showEmptyState("🔍", "Select a farm to begin.", "Choose a farm from the dropdown, then click Generate Recommendations.");
+      document.getElementById("activeFarmSubtitle").textContent =
+        "Select an active farm to generate recommendations";
+      return;
+    }
+
+    loadFarmMetrics(farmId);
+  }
+
+  // ── Load only weather + soil metrics (no SP run)
+  function loadFarmMetrics(farmId) {
+    fetch(`/user/api/farm-details/${farmId}`)
+      .then(r => { if (!r.ok) throw new Error("Failed to load farm data"); return r.json(); })
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById("activeFarmSubtitle").innerHTML =
+          `Loaded: <strong>${data.farm_name}</strong> — 📍 ${data.village_name || "N/A"}, ${data.district || "N/A"}`;
+
+        document.getElementById("avgTempDisplay").textContent =
+          data.avg_temp !== "N/A" && data.avg_temp != null ? `${data.avg_temp} °C` : "N/A";
+        document.getElementById("rainfallDisplay").textContent =
+          data.rainfall !== "N/A" && data.rainfall != null ? `${data.rainfall} mm` : "N/A";
+        document.getElementById("soilTypeDisplay").textContent =
+          data.soil_type || "N/A";
+        document.getElementById("phDisplay").textContent =
+          data.ph_level !== "N/A" && data.ph_level != null ? `${data.ph_level}` : "N/A";
+      })
+      .catch(err => {
+        console.error("[loadFarmMetrics ERROR]", err);
+      });
+  }
+
+  // ── Generate button: calls SP via generate_advisory, then renders results
+ function runAdvisory() {
+  if (!activeFarmId) return;
+
+  const btn = document.getElementById("generateBtn");
+  btn.disabled  = true;
+  btn.textContent = "⏳ Generating…";
+
+  // Loading states for both sections
+  const loadingHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">⏳</div>
+      <h3>Running analysis…</h3>
+      <p style="font-size:13px;margin-top:4px;">Fetching live weather and scoring crops.</p>
+    </div>`;
+  
+  document.getElementById("cropContainer").innerHTML = loadingHTML;
+  document.getElementById("gapAnalysisContainer").innerHTML = loadingHTML;
+
+  fetch("/user/generate_advisory", {
+    method:  "POST",
+    headers: { "Content-Type": "application/json" },
+    body:    JSON.stringify({ farm_id: activeFarmId }),
+  })
+    .then(r => { if (!r.ok) throw new Error("Advisory request failed"); return r.json(); })
+    .then(data => {
+      if (data.error) throw new Error(data.details || data.error);
+
+      // Refresh metric cards with freshly inserted weather
+      loadFarmMetrics(activeFarmId);
+
+      document.getElementById("timestampBadge").textContent =
+        `Generated: ${new Date().toLocaleString()}`;
+
+      // Render both chunks of response data dynamically
+      renderRecommendations(data.recommendations);
+      renderGapAnalysis(data.gap_analysis); 
+    })
+    .catch(err => {
+      console.error("[runAdvisory ERROR]", err);
+      const errorHTML = `
+        <div style="color:#e53935;padding:20px;text-align:center;font-weight:600;">
+          ❌ ${err.message || "Failed to generate advisory. Check server logs."}
+        </div>`;
+      
+      document.getElementById("cropContainer").innerHTML = errorHTML;
+      document.getElementById("gapAnalysisContainer").innerHTML = errorHTML;
+    })
+    .finally(() => {
+      btn.disabled    = false;
+      btn.textContent = "🌱 Generate Recommendations";
+    });
+}
+  // ── Render crop recommendation rows
+  function renderRecommendations(crops) {
+    if (!crops || crops.length === 0) {
+      document.getElementById("cropContainer").innerHTML = `
+        <div style="text-align:center;padding:32px 16px;border:2px dashed #ffc107;
+                    background:#fffde7;border-radius:10px;">
+          <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
+          <h3 style="color:#876000;font-size:15px;">No recommendations found</h3>
+          <p style="font-size:13px;color:#665c30;margin:6px 0 14px;">
+            Make sure this farm has a soil profile configured and weather data is available.
+          </p>
+          <a href="${farmConfigUrl}"
+             style="display:inline-block;padding:8px 16px;background:#fff;
+                    border:1px solid #ffb300;color:#b78103;font-weight:700;
+                    font-size:12px;text-decoration:none;border-radius:6px;">
+            🛠️ Configure Soil Profile
+          </a>
+        </div>`;
+      return;
+    }
+
+    let html = "";
+    crops.forEach(crop => {
+      const score      = parseFloat(crop.total_score);
+      const badgeColor = score >= 70 ? "#2e7d32" : score >= 40 ? "#f57c00" : "#e53935";
+      const date       = crop.generated_date
+        ? new Date(crop.generated_date).toLocaleDateString()
+        : "N/A";
+
+      html += `
+        <div class="crop-row">
+          <div class="crop-info">
+            <span class="crop-icon">🌾</span>
+            <div>
+              <div class="crop-name">${crop.crop_name}</div>
+              <div class="crop-meta">
+                ${crop.crop_category || "General"} &nbsp;|&nbsp; Generated: ${date}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    document.getElementById("cropContainer").innerHTML = html;
+  }
+
+  // ── NEW: Render dynamic Gap Analysis cards at runtime
+function renderGapAnalysis(gapAnalysisData) {
+  const container = document.getElementById("gapAnalysisContainer");
+  
+  if (!gapAnalysisData || gapAnalysisData.length === 0) {
+    container.innerHTML = '<p class="no-data">No gap analysis data available.</p>';
+    return;
+  }
+
+  let html = '<div class="gap-grid">';
+  
+  gapAnalysisData.forEach(crop => {
+    const failures = crop.failures || {};
+    
+    // 1. Build readable strings only for metrics that actually failed
+    let detailsHtml = "";
+    
+    if (failures.temperature) {
+      detailsHtml += `<div class="gap-meta">🌡️ <strong>Temp Gap:</strong> ${failures.temperature.gap} °C</div>`;
+    }
+    if (failures.rainfall) {
+      detailsHtml += `<div class="gap-meta">🌧️ <strong>Rainfall Gap:</strong> ${failures.rainfall.gap} mm</div>`;
+    }
+    if (failures.ph) {
+      detailsHtml += `<div class="gap-meta">🧪 <strong>pH Gap:</strong> ${failures.ph.gap}</div>`;
+    }
+
+    // 2. Determine severity status based on proximity score or number of failures
+    // Low proximity score means it's far from ideal -> Critical
+    const isCritical = crop.proximity_score < 50 || Object.keys(failures).length >= 2;
+    const statusText = isCritical ? "Critical Action Required" : "Needs Management";
+    const badgeClass = isCritical ? "badge-danger" : "badge-warning";
+
+    html += `
+      <div class="gap-card" style="margin-bottom: 15px; padding: 12px; border-radius: 8px; border: 1px solid #e0e0e0;">
+        <div class="gap-title" style="font-weight: 700; font-size: 15px; color: #2e7d32;">${crop.crop_name}</div>
+        <div class="gap-meta" style="font-size: 12px; color: #666; margin-bottom: 6px;">
+          <strong>Match Score:</strong> ${crop.proximity_score}%
+        </div>
+        
+        <div class="gap-details" style="font-size: 13px; margin: 8px 0;">
+          ${detailsHtml || '<div class="gap-meta" style="color: #2e7d32;">✅ All tracked constraints met.</div>'}
+        </div>
+        
+        <span class="${badgeClass}">${statusText}</span>
+      </div>`;
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+  // ── Helpers
+  function resetMetrics() {
+    ["avgTempDisplay","rainfallDisplay","soilTypeDisplay","phDisplay"]
+      .forEach(id => document.getElementById(id).textContent = "—");
+  }
+
+  function showEmptyState(icon, title, subtitle) {
+    document.getElementById("cropContainer").innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${icon}</div>
+        <h3>${title}</h3>
+        <p style="font-size:13px;margin-top:4px;">${subtitle}</p>
+      </div>`;
+  }
+</script>
+
+</body>
+</html>
